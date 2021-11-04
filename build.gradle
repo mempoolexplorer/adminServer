@@ -1,0 +1,57 @@
+plugins {
+	id 'org.springframework.boot' version '2.2.5.RELEASE'
+	id 'io.spring.dependency-management' version '1.0.9.RELEASE'
+	id 'com.palantir.docker' version '0.22.1'
+	id 'java'
+}
+
+group = 'com.mempool.explorer.admin.server'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '11'
+
+repositories {
+	mavenCentral()
+}
+
+ext {
+  set('springBootAdminVersion', "2.2.1")
+  set('springCloudVersion', "Hoxton.SR1")
+}
+
+dependencies {
+  implementation 'de.codecentric:spring-boot-admin-starter-server'
+  implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+  testImplementation('org.springframework.boot:spring-boot-starter-test') {
+    exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+  }
+}
+
+dependencyManagement {
+  imports {
+    mavenBom "de.codecentric:spring-boot-admin-dependencies:${springBootAdminVersion}"
+    mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+  }
+}
+
+test {
+	useJUnitPlatform()
+}
+
+// Esto es formato recomendado
+//task unpack(type: Copy) {
+//    dependsOn bootJar
+//    from(zipTree(tasks.bootJar.outputs.files.singleFile))
+//    into("build/dependency")
+//}
+//docker {
+//    name "localhost:5000/configuration_server:latest"
+//    copySpec.from(tasks.unpack.outputs).into("dependency")
+//    buildArgs(['DEPENDENCY': "dependency"])
+//}
+
+//Este es mi formato
+docker {
+    name "localhost:5000/admin_server:latest"
+    copySpec.from("build/libs/adminServer-0.0.1-SNAPSHOT.jar").into("app")
+    buildArgs(['DEPENDENCY': "app"])
+}
